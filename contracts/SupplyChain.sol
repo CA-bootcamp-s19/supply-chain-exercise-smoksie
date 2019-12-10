@@ -91,6 +91,7 @@ contract SupplyChain {
   // REVIEW THIS, what is missing
   modifier forSale(uint _sku) {
     require(items[_sku].state == State.ForSale, 'Item not for sale.');
+    require(skuCount > 0, 'Double check item has been added.');
     _;
   }
 
