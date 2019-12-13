@@ -9,10 +9,10 @@ pragma solidity ^0.5.0;
 contract SupplyChain {
 
   /* set owner */
-  address owner;
+  address public owner;
 
   /* Add a variable called skuCount to track the most recent sku # */
-  uint skuCount;
+  uint public skuCount;
 
   /* Add a line that creates a public mapping that maps the SKU (a number) to an Item.
      Call this mappings items
@@ -88,10 +88,9 @@ contract SupplyChain {
   // modifier shipped
   // modifier received
 
-  // REVIEW THIS, what is missing
   modifier forSale(uint _sku) {
     require(items[_sku].state == State.ForSale, 'Item not for sale.');
-    require(skuCount > 0, 'Double check item has been added.');
+    require(skuCount > 0, 'Check item has been added.');
     _;
   }
 
@@ -101,12 +100,12 @@ contract SupplyChain {
   }
 
   modifier shipped(uint _sku) {
-    require(items[_sku].state == State.Shipped, 'Item shipped.');
+    require(items[_sku].state == State.Shipped, 'Item not shipped.');
     _;
   }
 
   modifier received(uint _sku) {
-    require(items[_sku].state == State.Received, 'Item received.');
+    require(items[_sku].state == State.Received, 'Item not received.');
     _;
   }
 
@@ -130,42 +129,42 @@ contract SupplyChain {
     if the buyer paid enough, and check the value after the function is called to make sure the buyer is
     refunded any excess ether sent. Remember to call the event associated with this function!*/
 
-  function buyItem(uint sku)
+  function buyItem(uint _sku)
     public
     payable
-    forSale(sku)
-    paidEnough(sku)
-    checkValue(sku)
+    forSale(_sku)
+    paidEnough(items[_sku].price)
+    checkValue(_sku)
   {
     // transfer money to seller
-    items[sku].seller.transfer(items[sku].price);
+    items[_sku].seller.transfer(items[_sku].price);
     // set buyer as the person who called the transaction
-    items[sku].buyer = msg.sender;
+    items[_sku].buyer = msg.sender;
     // set state to Sold
-    items[sku].state = State.Sold;
-    emit LogSold(sku);
+    items[_sku].state = State.Sold;
+    emit LogSold(_sku);
   }
 
   /* Add 2 modifiers to check if the item is sold already, and that the person calling this function
   is the seller. Change the state of the item to shipped. Remember to call the event associated with this function!*/
-  function shipItem(uint sku)
+  function shipItem(uint _sku)
     public
-    sold(sku)
-    verifyCaller(items[sku].seller)
+    sold(_sku)
+    verifyCaller(items[_sku].seller)
   {
-    emit LogShipped(sku);
-    items[sku].state = State.Shipped;
+    emit LogShipped(_sku);
+    items[_sku].state = State.Shipped;
   }
 
   /* Add 2 modifiers to check if the item is shipped already, and that the person calling this function
   is the buyer. Change the state of the item to received. Remember to call the event associated with this function!*/
-  function receiveItem(uint sku)
+  function receiveItem(uint _sku)
     public
-    shipped(sku)
-    verifyCaller(items[sku].buyer)
+    shipped(_sku)
+    verifyCaller(items[_sku].buyer)
   {
-    emit LogReceived(sku);
-    items[sku].state = State.Received;
+    emit LogReceived(_sku);
+    items[_sku].state = State.Received;
   }
 
   /* We have these functions completed so we can run tests, just ignore it :) */
